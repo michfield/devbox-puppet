@@ -1,0 +1,59 @@
+# Configuration file you can set some basic parameters,
+# that must be changeable on your setup
+#
+# This is not really an JSON file, it's YAML, but written in json-style.
+# YAML is here used as JSON superset with support for comments.
+#
+# It's obvious that you can use any YAML format that you want.
+# Just check it's valid. Do it online at: http://yaml-online-parser.appspot.com/
+
+{
+    "environment": "-",                       # enum: 'debug'
+    "timezone": "Europe/Belgrade",
+
+    "domain": "devbox.lan",
+
+    "nodes":
+    {
+
+        "main":
+        {
+
+            "ip":   "192.168.7.70",
+            "host": "main",
+            "ram":  "512",                  # memory in megabytes
+
+            "port":
+            {
+                "ssh": "2201",
+                "web": "8001",
+                "rdp": "3301"
+            },
+
+            "projects":
+            {
+                # separate hostnames with spaces.
+                # This line could end up in hosts file (on host machine)
+
+                "project-cs.dev":
+                {
+                    path: "/vagrant/projects/project-cs",
+                    repo: "git+ssh://user@server.com:4322/home/git-repo/project.git"
+                }
+            }
+        },
+
+        "node.js":
+        {
+            "ip":   "192.168.7.71",
+            "host": "node",
+            "ram":  "256",                  # memory in megabytes
+
+            "port":
+            {
+                "ssh": "2202",
+                "web": "8002"
+            }
+        }
+    }
+}

@@ -1,0 +1,209 @@
+#
+# Debugging with:
+#   set VAGRANT_LOG=INFO
+#
+
+require "yaml"
+require "erb"
+
+# ruby does not do a 'deep' merge of hashes, so we need a helper
+public
+def deep_merge!(other_hash)
+  merge!(other_hash) do |key, oldval, newval|
+    oldval.class == self.class ? oldval.deep_merge!(newval) : newval
+  end
+end
+
+# Load configuration from file
+here = File.dirname(__FILE__)
+
+config = YAML.load_file(File.join(here, "vagrantfile.defaults.yaml"))
+
+begin
+  config.deep_merge!(YAML.load_file(File.join(here, "vagrantfile.config.yaml")))
+rescue Errno::ENOENT
+
+  puts
+  puts "* Check existance and validity of 'vagrantfile.config.yaml' file."
+  puts
+
+end
+
+# Ensure a private key file in copied to a location a Puppet can read
+begin
+  FileUtils.copy(config['git']['key'],
+    File.join(File.dirname(__FILE__), "puppet/modules/development/files/privatekey.ppk"))
+rescue Errno::ENOENT
+
+  # Suppress errors
+
+  puts
+  puts "* You should specify the path for your SSH private key."
+  puts "  This, and more, can be specified in 'vagrantfile.config.yaml' file."
+  puts
+
+end
+
+# create a .rdp connection file with given name and port number (on localhost)
+# simpler: create 'hostname.rdp' from a template
+
+public
+def create_rdp_file(hostname, port)
+
+  # Works only on Windows. And watch out: .erb template must be saved in UTF-8
+  if ENV['OS'] == 'Windows_NT'
+
+    here = File.dirname(__FILE__)
+    File.open(File.join(here, "miscellaneous/#{hostname}.rdp"), 'w') do |f|
+      f.write ERB.new(File.read(File.join(here, "miscellaneous/rdpfile.erb"))).result(binding)
+      # since we used the block notation, the file is closed automatically on block end
+    end
+  end
+end
+
+#
+# Configure Vagrant Virtual Machines
+#
+
+Vagrant::Config.run do |vcfg|
+
+  # configure the main system
+
+  vcfg.vm.define :main do |cfg|
+
+    this = config['nodes']['main']
+
+    # only if gui
+    create_rdp_file(this['host'], this['port']['rdp'].to_i)
+
+    # base box
+    cfg.vm.box = "quantal64"
+    cfg.vm.box_url = "https://github.com/downloads/roderik/VagrantQuantal64Box/quantal64.box"
+
+    # ssh port
+    cfg.ssh.port = this['port']['ssh']
+    cfg.vm.forward_port(22, (this['port']['ssh']).to_i);
+
+    # web & rdp (Remote Desktop)
+    cfg.vm.forward_port(80, (this['port']['web']).to_i)
+    cfg.vm.forward_port(3389, (this['port']['rdp']).to_i)
+
+    # Vagrant-hostmaster plugin doesn't make sense for bridged networking. The host has no known
+    # IP, upfront. The only way it's working when networking is set to hostonly.
+
+    cfg.vm.host_name = "#{this['host']}.#{config['domain']}"
+
+    hostnames = (config['nodes']['main']['projects']).keys.join(" ")
+    cfg.hosts.name = "#{this['host']}.#{config['domain']} #{hostnames}" if Vagrant.const_defined?(:Hostmaster)
+
+    # Vagrant-vbguest plugin will update Guesta Additions if they are not the same version as
+    # VirtualBox. Here, I disabled automatic updating, for now
+
+    cfg.vbguest.auto_update = false if Vagrant.const_defined?(:VagrantVbguest)
+
+    # first adapter is NAT, second is hostonly,
+    # and third is bridged (IP leased by DHCP, can't be set as static)
+
+    cfg.vm.network :hostonly, "#{this['ip']}"
+
+    # beware: bridging a wireless interface makes the wole VM extremly slow
+    # but it's the only way to bee seen outside.
+    # cfg.vm.network :bridged, :bridge => "Dell Wireless 1702 802.11b/g/n"
+
+    # rename, set options, etc
+    cfg.vm.customize ["modifyvm", :id, "--name", "#{config['domain']} ~ #{this['host']}"]
+    cfg.vm.customize ["modifyvm", :id, "--memory", "#{this['ram']}"]
+
+    # If we want a fast GUI, we need at least 128Mb of video memory
+    # cfg.vm.boot_mode = :gui
+    cfg.vm.customize ["modifyvm", :id, "--vram", "128"]
+    cfg.vm.customize ["modifyvm", :id, "--accelerate3d", "on"]
+
+    # fix VirtualBox problem with symlinks on shared folders
+    cfg.vm.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+
+    # default:
+    #   cfg.vm.share_folder("v-root", "/vagrant", ".")
+    #   cfg.vm.share_folder "foo", "/guest/path", "/host/path"
+    #   cfg.vm.share_folder "v-data", "/data", File.join(File.dirname(__FILE__), "data")
+
+    cfg.vm.provision :puppet do |puppet|
+
+      # disable unnecessary output to console
+      # messages are now logged to /var/log/syslog
+
+      if config['environment'] == 'debug'
+        puppet.options = ['--verbose --debug --logdest=syslog']
+      else
+        puppet.options = ['--logdest=syslog']
+      end
+
+      # Default manifest file is already "default.pp"
+      # manifests_path is "manifests", modules path is 'modules'
+      # These vars can be an arrays as ["puppet/modules", "puppet/services"]
+
+      puppet.manifest_file  = "default.pp"
+      puppet.manifests_path = "puppet/manifests"
+      puppet.module_path    = "puppet/modules"
+
+      # not needed anymore. variables are read from config directly inside puppet
+
+      # puppet.facter =
+      # [
+      #     ['env_domain' , "#{domain}" ],
+      #     ['env_hn_main', "#{hn_main}"], ['env_ip_main', "#{ip_main}"],
+      #     ['env_hn_node', "#{hn_node}"], ['env_ip_node', "#{ip_node}"],
+      # ]
+
+      # with this directive, you can test Puppet files
+      # inside virtual machine with directive, without --modulepath switch:
+      # puppet apply --modulepath=../modules/ site.pp
+      # but it's not working...
+      # puppet.options = ["--modulepath", "/tmp/vagrant-puppet/modules-0/"]
+
+    end
+
+  end
+
+  vcfg.vm.define :node do |cfg|
+
+    this = config['nodes']['node.js']
+
+    # base box
+    cfg.vm.box = "precise64"
+    cfg.vm.box_url = "http://files.vagrantup.com/precise64.box"
+
+    cfg.vm.network :hostonly, "#{this['ip']}"
+
+    cfg.ssh.port = this['port']['ssh']
+
+    cfg.vm.forward_port(22,   (this['port']['ssh']).to_i);
+    cfg.vm.forward_port(80,   (this['port']['web']).to_i)
+    cfg.vm.forward_port(3389, (this['port']['rdp']).to_i)
+
+    # etc
+    cfg.vm.customize ["modifyvm", :id, "--name", "#{config['domain']} ~ #{this['host']}"]
+    cfg.vm.customize ["modifyvm", :id, "--memory", "#{this['ram']}"]
+
+    cfg.vm.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+
+    # some vagrant plugins: vagrant-hostmaster and vagrant-vbguest
+    cfg.vm.host_name = "#{this['host']}.#{config['domain']}"
+    # cfg.hosts.name = "#{this['host']}.#{config['domain']}"  if Vagrant.const_defined?(:Hostmaster)
+    cfg.vbguest.auto_update = false if Vagrant.const_defined?(:VagrantVbguest)
+
+    if config['environment'] == 'debug'
+      # puppet_options = ['--verbose --debug --logdest=syslog']
+      puppet_options = ['--verbose --debug']
+    else
+      puppet_options = ['--logdest=syslog']
+    end
+
+    cfg.vm.provision :puppet do |p|
+      p.options        = puppet_options
+      p.manifests_path = "puppet/manifests"
+      p.module_path    = "puppet/modules"
+    end
+  end
+
+end

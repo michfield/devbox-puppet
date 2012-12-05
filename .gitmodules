@@ -1,0 +1,15 @@
+[submodule "puppet/modules/apt"]
+	path = puppet/modules/apt
+	url = https://github.com/puppetlabs/puppetlabs-apt.git
+[submodule "puppet/modules/stdlib"]
+	path = puppet/modules/stdlib
+	url = https://github.com/puppetlabs/puppetlabs-stdlib.git
+[submodule "puppet/modules/file_line"]
+	path = puppet/modules/file_line
+	url = https://github.com/duelafn/puppet-file_line.git
+[submodule "puppet/modules/vcsrepo"]
+	path = puppet/modules/vcsrepo
+	url = https://github.com/puppetlabs/puppetlabs-vcsrepo.git
+[submodule "puppet/modules/functions"]
+	path = puppet/modules/functions
+	url = https://github.com/kwilczynski/puppet-functions.git

@@ -1,0 +1,19 @@
+{
+    "font_size": 10,
+
+    "theme": "Phoenix Dark.sublime-theme",
+    "phoenix_color_orange": true,
+    "color_scheme": "Packages/Color Scheme - Default/Sunburst.tmTheme",
+
+    "spell_check": true,
+    "save_on_focus_lost": true,
+    "highlight_modified_tabs": true,
+
+    "tab_size": 4,
+    "word_wrap": "false",
+
+    "translate_tabs_to_spaces": true,
+    "default_line_ending": "unix",
+    "trim_trailing_white_space_on_save": true,
+    "ensure_newline_at_eof_on_save": true
+}

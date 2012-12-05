@@ -1,0 +1,156 @@
+# Local configuration
+# Warning: watch out of orphaned commas.
+
+{
+  "timezone": "Europe/Belgrade",
+
+  "git":
+  {
+    "key": "c:/Path/To/Private/Key/id_rsa.openssh.ppk"
+  },
+
+  "nodes":
+  {
+
+    "main": # main virtual machine
+    {
+
+      "projects": # active projects (repos) on that machine
+      {
+
+        "project.dev": # project name
+        {
+          "repo": "git+ssh://user@server.com:4322/home/git-repo/project.git",
+          "path": "/vagrant/projects/prj",
+
+          "vhosts": # project can have multiple vhosts
+          {
+
+            "www.projectvip.dev": # domain Admin
+            {
+              "http": "htdocs/admin",
+              "conf": "resources/vhosts/conf/default.conf",
+
+              "aliases": # domain aliases
+              [
+                "m1.projectvip.dev", "m2.projectvip.dev", "m3.projectvip.dev",
+                "m5.projectvip.dev", "a1.projectvip.dev", "a2.projectvip.dev",
+                "a3.projectvip.dev", "a4.projectvip.dev", "a5.projectvip.dev"
+              ]
+            },
+
+            "data-m1.projectvip.dev": # API
+            {
+              "http": "htdocs/api",
+              "conf": "resources/vhosts/conf/default.conf",
+
+              "aliases":
+              [
+                "data-m2.projectvip.dev", "data-m3.projectvip.dev", "data-m5.projectvip.dev",
+                "data-a1.projectvip.dev", "data-a2.projectvip.dev", "data-a3.projectvip.dev",
+                "data-a4.projectvip.dev", "data-a5.projectvip.dev"
+              ]
+            },
+
+            "support-m1.projectvip.dev": # Support
+            {
+              "http": "htdocs/support",
+              "conf": "resources/vhosts/conf/default.conf",
+
+              "aliases":
+              [
+                "support-m2.projectvip.dev", "support-m3.projectvip.dev", "support-m5.projectvip.dev",
+                "support-a1.projectvip.dev", "support-a2.projectvip.dev", "support-a3.projectvip.dev",
+                "support-a4.projectvip.dev", "support-a5.projectvip.dev"
+              ]
+            },
+
+            "prj-m1.projectvip.dev": # Frontend M1
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-m1.projectvip.dev", "secure-m1.projectvip.dev" ]
+            },
+
+            "prj-m2.projectvip.dev": # Frontend M2
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-m2.projectvip.dev", "secure-m2.projectvip.dev" ]
+            },
+
+            "prj-m3.projectvip.dev": # Frontend M3
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-m3.projectvip.dev", "secure-m3.projectvip.dev" ]
+            },
+
+            "prj-m5.projectvip.dev": # Frontend M5
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-m5.projectvip.dev", "secure-m5.projectvip.dev" ]
+            },
+
+            "prj-a1.projectvip.dev": # Frontend A1
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-a1.projectvip.dev", "secure-a1.projectvip.dev" ]
+            },
+
+            "prj-a2.projectvip.dev": # Frontend A2
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-a2.projectvip.dev", "secure-a2.projectvip.dev" ]
+            },
+
+            "prj-a3.projectvip.dev": # Frontend A3
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-a3.projectvip.dev", "secure-a3.projectvip.dev" ]
+            },
+
+
+            "prj-a4.projectvip.dev": # Frontend A4
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-a4.projectvip.dev", "secure-a4.projectvip.dev" ]
+            },
+
+
+            "prj-a5.projectvip.dev": # Frontend A5
+            {
+              "http": "htdocs/frontend",
+              "conf": "resources/vhosts/conf/default_with_systemid.conf",
+              "aliases": [ "m.prj-a5.projectvip.dev", "secure-a5.projectvip.dev" ]
+            },
+
+            "ifc-global.prjcdn.dev": # IFC Global
+            {
+              "http": "htdocs/prj-interface",
+              "conf": "resources/vhosts/conf/default.conf"
+            },
+
+            "ifc.prjcdn.dev": # IFC
+            {
+              "http": "htdocs/frontend/public",
+              "conf": "resources/vhosts/conf/default.conf"
+            },
+
+            "cdn.prjcdn.dev": # CDN
+            {
+              "http": "htdocs/frontend/content",
+              "conf": "resources/vhosts/conf/default.conf"
+            }
+
+          } # vhosts
+        }
+      } # projects
+    }
+  } # nodes
+}

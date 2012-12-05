@@ -1,0 +1,23 @@
+# Default index.html file for new projects
+# Template managed by lighttpd::vhost define
+#
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+
+<h1><%= name %></h1>
+
+Lighttpd Installation Works!
+
+<% if aliases and not aliases.empty? -%>
+    Aliases: <%= aliases.collect! {|i| "#{i}" }.join('|') -%>
+<% end -%>
+
+    Document root: <%= lighttpd_www %>/<%= name %>/htdocs/
+
+<a href="index.php">PHP Info</a>
+
+</body>
+</html>

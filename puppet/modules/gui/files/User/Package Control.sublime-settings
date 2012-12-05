@@ -1,0 +1,14 @@
+{
+	"auto_upgrade_last_run": 0,
+	"installed_packages":
+	[
+		"DocBlockr",
+		"Git",
+		"LinkOpener",
+		"LiveReload",
+		"Markdown Preview",
+		"Package Control",
+		"SideBarEnhancements",
+		"Theme - Phoenix"
+	]
+}

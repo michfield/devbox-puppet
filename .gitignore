@@ -1,18 +1,15 @@
-*.gem
-*.rbc
-.bundle
-.config
-coverage
-InstalledFiles
-lib/bundler/man
-pkg
-rdoc
-spec/reports
-test/tmp
-test/version_tmp
-tmp
+# ignore file with VM UUID's
+.vagrant
 
-# YARD artifacts
-.yardoc
-_yardoc
-doc/
+# ignore private keys
+/puppet/modules/development/files/*.ppk
+
+# ignore projects (repositories)
+/projects/
+
+# auto-recreated remote desktop files
+/miscellaneous/*.rdp
+
+# ignoring configuration file is better utilized using Git's `skip-worktree` flag
+# vagrantfile.config
+

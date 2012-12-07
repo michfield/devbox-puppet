@@ -78,6 +78,9 @@ class semaphore
         project_list => $base::config::hash['nodes']['main']['projects']
         }
 
+      # This is exactly why I switched to Chef (Ruby DSL is shit)
+      server::vhost { "none": ensure  => absent }
+
       # project can have multiple virtual hosts
       class { 'server::vhosts':
         project_list => $base::config::hash['nodes']['main']['projects'],
